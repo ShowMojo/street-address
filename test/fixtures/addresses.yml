@@ -1,0 +1,98 @@
+---
+good_addresses:
+- 142 E 26th St Apt 5-4, New York, NY 10010
+- 2730 S Veitch St Apt 207, Arlington, VA 22206
+- 44 Canal Center Plaza Suite 500, Alexandria, VA 22314
+- 1005 Gravenstein Hwy N, Sebastopol CA 95472
+- ! '2730 South Veitch St #207, Arlington, VA 22206'
+- 1600 Pennsylvania Ave Washington DC
+- 1600 Pennsylvania Ave Washington DC 20006
+- ! '1600 Pennsylvania Ave #400, Washington, DC, 20006'
+- 1600 Pennsylvania Ave Washington, DC
+- ! '1600 Pennsylvania Ave #400 Washington DC'
+- 1600 Pennsylvania Ave, 20006
+- ! '1600 Pennsylvania Ave #400, 20006'
+- 1600 Pennsylvania Ave 20006
+- ! '1600 Pennsylvania Ave #400 20006'
+good_intersections:
+- Hollywood & Vine, Los Angeles, CA
+- Hollywood Blvd and Vine St, Los Angeles, CA
+- Mission Street at Valencia Street, San Francisco, CA
+- Hollywood & Vine, Los Angeles, CA, 90028
+- Hollywood Blvd and Vine St, Los Angeles, CA, 90028
+- Mission Street at Valencia Street, San Francisco, CA, 90028
+bad_addresses:
+- PO BOX 450, Chicago IL 60657
+complete_addresses:
+- full: 142 E 26th St Apt 5-4, New York, NY 10010
+  number: '142'
+  street: 26th
+  street_type: St
+  unit: 5-4
+  unit_prefix: Apt
+  suffix: 
+  prefix: E
+  city: New York
+  state: NY
+  postal_code: '10010'
+  postal_code_ext: 
+- full: 2730 S Veitch St Apt 207, Arlington, VA 22206
+  number: '2730'
+  street: Veitch
+  street_type: St
+  unit: '207'
+  unit_prefix: Apt
+  suffix: 
+  prefix: S
+  city: Arlington
+  state: VA
+  postal_code: '22206'
+  postal_code_ext: 
+- full: 44 Canal Center Plaza Suite 500, Alexandria, VA 22314
+  number: '44'
+  street: Canal Center
+  street_type: Plz
+  unit: '500'
+  unit_prefix: Suite
+  suffix: 
+  prefix: 
+  city: Alexandria
+  state: VA
+  postal_code: '22314'
+  postal_code_ext: 
+- full: 1600 Pennsylvania Ave Washington DC
+  number: '1600'
+  street: Pennsylvania
+  street_type: Ave
+  unit: 
+  unit_prefix: 
+  suffix: 
+  prefix: 
+  city: Washington
+  state: DC
+  postal_code: 
+  postal_code_ext: 
+- full: 1005 Gravenstein Hwy N, Sebastopol CA 95472
+  number: '1005'
+  street: Gravenstein
+  street_type: Hwy
+  unit: 
+  unit_prefix: 
+  suffix: N
+  prefix: 
+  city: Sebastopol
+  state: CA
+  postal_code: '95472'
+  postal_code_ext: 
+- full: ! '2730 South Veitch St #207, Arlington, VA 22206'
+  number: '2730'
+  street: Veitch
+  street_type: St
+  unit: '207'
+  unit_prefix: 
+  suffix: 
+  prefix: S
+  city: Arlington
+  state: VA
+  postal_code: '22206'
+  postal_code_ext: 
