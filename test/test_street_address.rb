@@ -1,7 +1,6 @@
 require 'test/unit'
 require 'street_address'
 
-
 class StreetAddressUsTest < Test::Unit::TestCase
   def setup
     @addr1 = "2730 S Veitch St Apt 207, Arlington, VA 22206"
@@ -9,7 +8,7 @@ class StreetAddressUsTest < Test::Unit::TestCase
     @addr3 = "1600 Pennsylvania Ave Washington DC"
     @addr4 = "1005 Gravenstein Hwy N, Sebastopol CA 95472"
     @addr5 = "PO BOX 450, Chicago IL 60657"
-    @addr6 = "2730 S Veitch St #207, Arlington, VA 22206"
+    @addr6 = "2730 South Veitch St #207, Arlington, VA 22206"
 
     @int1 = "Hollywood & Vine, Los Angeles, CA"
     @int2 = "Hollywood Blvd and Vine St, Los Angeles, CA"

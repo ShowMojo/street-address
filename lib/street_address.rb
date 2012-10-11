@@ -62,20 +62,14 @@
     
 =end
 
+
 module StreetAddress
   class US
     VERSION = '1.0.3'
-    DIRECTIONAL = {
-      "north" => "N",
-      "northeast" => "NE",
-      "east" => "E",
-      "southeast" => "SE",
-      "south" => "S",
-      "southwest" => "SW",
-      "west" => "W",
-      "northwest" => "NW"
-    }
-    DIRECTION_CODES = DIRECTIONAL.invert
+
+    require 'street_address/us/directions'
+
+    include Directions
 
     STREET_TYPES = {
       "allee" => "aly",
@@ -540,9 +534,9 @@ module StreetAddress
         (' + state_regexp + ')
       )'
       
-    self.direct_regexp = DIRECTIONAL.keys.join("|") + 
+    self.direct_regexp = DIRECTIONS.keys.join("|") + 
       "|" + 
-      DIRECTIONAL.values.sort{ |a,b| 
+      DIRECTIONS.values.sort{ |a,b| 
         b.length <=> a.length 
       }.map{ |x| 
         f = x.gsub(/(\w)/, '\1.')
@@ -741,7 +735,7 @@ module StreetAddress
         if dir.length < 3
           dir.upcase
         else
-          DIRECTIONAL[dir.downcase]
+          self::DIRECTIONS[dir.downcase]
         end
       end
     end
