@@ -7,6 +7,7 @@ end
 desc "Run tests"
 task :default => :test
 
+desc "Filter an input file of addresses into a good and bad files. Usage: [input] [good] [bad]"
 task :filter_file do
   $:.unshift File.join(File.dirname(__FILE__), "lib")
   require 'benchmark'
@@ -25,7 +26,7 @@ task :filter_file do
     bm = Benchmark.measure do
       input.each do |address_input|
         address_input = "#{$1}\n" if address_input =~ /^"(.*)"$/
-        address_obj = StreetAddress::US.parse(address_input)
+        address_obj = StreetAddress::US.parse_address(address_input)
         if address_obj
           good_out.write address_input
           good += 1
