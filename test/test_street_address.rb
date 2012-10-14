@@ -59,8 +59,7 @@ class StreetAddressUsTest < Test::Unit::TestCase
   def test_parse_on_complete_addresses
     @complete_addresses.each do |a|
       addr = StreetAddress::US.parse(a["full"])
-      puts a["full"]
-      puts addr.as_json.inspect
+
       assert_equal addr.number,           a["number"]
       assert_equal addr.street,           a["street"]
       assert_equal addr.street_type,      a["street_type"]

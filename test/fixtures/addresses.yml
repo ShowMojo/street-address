@@ -1,7 +1,7 @@
 ---
 good_addresses:
 - 142 E 26th St Apt 5-4, New York, NY 10010
-#- 277 E 66TH ST
+- 277 E 66TH ST
 - 2730 S Veitch St Apt 207, Arlington, VA 22206
 - 44 Canal Center Plaza Suite 500, Alexandria, VA 22314
 - 1005 Gravenstein Hwy N, Sebastopol CA 95472
@@ -15,9 +15,10 @@ good_addresses:
 - ! '1600 Pennsylvania Ave #400, 20006'
 - 1600 Pennsylvania Ave 20006
 - ! '1600 Pennsylvania Ave #400 20006'
-#- ! '1600 Pennsylvania Ave #400'
-#- 200 London Ave, Apt B6
-#- 1225 Jackson St, 3
+- ! '1600 Pennsylvania Ave #400'
+- 200 London Ave, Apt B6
+- 1225 Jackson St, 3
+- 44 Broadway
 good_intersections:
 - Hollywood & Vine, Los Angeles, CA
 - Hollywood Blvd and Vine St, Los Angeles, CA
@@ -28,30 +29,30 @@ good_intersections:
 bad_addresses:
 - PO BOX 450, Chicago IL 60657
 complete_addresses:
-#- full: 200 London Ave, B6
-#  number: '200'
-#  street: London
-#  street_type: Ave
-#  unit: B6
-#  unit_prefix: 
-#  suffix: 
-#  prefix: 
-#  city: 
-#  state: 
-#  postal_code: 
-#  postal_code_ext: 
-#- full: 1225 Jackson St, 3
-#  number: '1225'
-#  street: Jackson
-#  street_type: St
-#  unit: '3'
-#  unit_prefix: 
-#  suffix: 
-#  prefix: 
-#  city: 
-#  state: 
-#  postal_code: 
-#  postal_code_ext: 
+- full: 200 London Ave, B6
+  number: '200'
+  street: London
+  street_type: Ave
+  unit: B6
+  unit_prefix: 
+  suffix: 
+  prefix: 
+  city: 
+  state: 
+  postal_code: 
+  postal_code_ext: 
+- full: 1225 Jackson St, 3
+  number: '1225'
+  street: Jackson
+  street_type: St
+  unit: '3'
+  unit_prefix: 
+  suffix: 
+  prefix: 
+  city: 
+  state: 
+  postal_code: 
+  postal_code_ext: 
 - full: 142 E 26th St Apt 5-4, New York, NY 10010
   number: '142'
   street: 26th
