@@ -120,6 +120,8 @@ module StreetAddress
         return if tokens.empty?
         a = Address.new({})
 
+        return parse_intersection(location) if tokens.grep(/^(&|and|at)$/i).any?
+
         a.number = tokens.shift
         return unless a.number =~ /\d+-?\d*[a-z]?/i and tokens.any?
 
@@ -161,7 +163,7 @@ module StreetAddress
       end
 
       def tokenize(str)
-        str.strip.split(/[^[:alnum:]-]+/)
+        str.strip.split(/[ ,#\n\r\t]+/)
       end
 
       def parse_state(address, tokens)

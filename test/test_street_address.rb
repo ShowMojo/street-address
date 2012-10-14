@@ -82,7 +82,7 @@ class StreetAddressUsTest < Test::Unit::TestCase
 
   def test_parse_on_good_intersections
     @good_intersections.each do |intersection|
-      assert_not_nil StreetAddress::US.parse_intersection(intersection)
+      assert_not_nil StreetAddress::US.parse(intersection)
     end
   end
 
@@ -96,7 +96,7 @@ class StreetAddressUsTest < Test::Unit::TestCase
     assert_equal StreetAddress::US.parse("&"), nil
     assert_equal StreetAddress::US.parse(" and "), nil
 
-    addr = StreetAddress::US.parse_intersection(@int1)
+    addr = StreetAddress::US.parse(@int1)
     assert_equal addr.city, "Los Angeles"
     assert_equal addr.state, "CA"
     assert_equal addr.street, "Hollywood"
@@ -105,7 +105,7 @@ class StreetAddressUsTest < Test::Unit::TestCase
     assert_equal addr.postal_code, nil
     assert_equal addr.intersection?, true
 
-    addr = StreetAddress::US.parse_intersection(@int2)
+    addr = StreetAddress::US.parse(@int2)
     assert_equal addr.city, "Los Angeles"
     assert_equal addr.state, "CA"
     assert_equal addr.street, "Hollywood"
@@ -116,7 +116,7 @@ class StreetAddressUsTest < Test::Unit::TestCase
     assert_equal addr.street_type, "Blvd"
     assert_equal addr.street_type2, "St"
 
-    addr = StreetAddress::US.parse_intersection(@int3)
+    addr = StreetAddress::US.parse(@int3)
     assert_equal addr.city, "San Francisco"
     assert_equal addr.state, "CA"
     assert_equal addr.street, "Mission"
