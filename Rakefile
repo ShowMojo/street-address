@@ -1,4 +1,5 @@
 require 'rake/testtask'
+require 'pry'
 
 Rake::TestTask.new do |t|
   t.libs << 'test'
@@ -12,11 +13,12 @@ task :filter_file do
   $:.unshift File.join(File.dirname(__FILE__), "lib")
   require 'benchmark'
   require 'street_address'
+  require 'json'
   
   unless ARGV.length == 4
     puts "Expected format: `rake filter_file addresses_in.txt good_addresses_out.txt bad_addresses_out.txt`"
   else
-    input = File.readlines(ARGV[1])
+    input = File.read(ARGV[1]).split("\n")
     good_out, bad_out = ARGV[2..3].map{|p| File.open p, "w" }
     count, good, bad, start = 0, 0, 0, Time.now
     lines = input.count
@@ -25,17 +27,20 @@ task :filter_file do
 
     bm = Benchmark.measure do
       input.each do |address_input|
-        address_input = "#{$1}\n" if address_input =~ /^"(.*)"$/
-        address_obj = StreetAddress::US.parse_address(address_input)
+        address_input = $1 if address_input =~ /^"(.*)"$/
+        address_obj = StreetAddress::US.parse_better(address_input)
         if address_obj
-          good_out.write address_input
+          good_out.write "#{address_input}\n"
           good += 1
         else
-          bad_out.write address_input
+          bad_out.write "#{address_input}\n"
           bad += 1
         end
         count += 1
-        print "\r%6.2f %" % ((count/lines.to_f) * 100) if count % 100 == 0
+        if count % 100 == 0
+          good_out.flush; bad_out.flush
+          print "\r%6.2f %" % ((count/lines.to_f) * 100)
+        end
       end
       print "\r100.00 %\n\n"
     end

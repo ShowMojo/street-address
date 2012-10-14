@@ -89,6 +89,19 @@ module StreetAddress
         (?:' + unit_regexp + '(?:\W+|\Z))?' +
         '(?:' + place_regexp + ')?'
 
+    #class Parser
+    #  attr_accessor :address
+    #  def parse(location, options = {})
+    #    lines = location.strip.split(/\s*[,\n]+\s*/)
+    #    return if lines.empty? or lines.count > 5
+    #    self.address = Address.new
+    #    lines.each_with_index do |line, i|
+    #      send(:"parse_line_#{i}", line.split)
+    #    end
+    #    return verify, options
+    #  end
+    #end
+
 =begin rdoc
 
     parses either an address or intersection and returns an instance of
@@ -113,6 +126,111 @@ module StreetAddress
         else 
           parse_address(location);
         end
+      end
+
+      def parse_better(location, options = {})
+        tokens = tokenize location
+        return if tokens.empty?
+        a = Address.new({})
+
+        a.number = tokens.shift
+        return unless a.number =~ /\d+-?\d*[a-z]?/i and tokens.any?
+
+        street_type_index = tokens[1..-1].index do |t|
+          a.street_type = t if street_types[t.downcase]
+        end
+
+        if street_type_index
+          street_parts = tokens[0..(street_type_index)]
+          other_parts  = tokens[(street_type_index + 2)..-1]
+        else
+          street_parts, other_parts = location.split(",", 2).map{|l| tokenize l }
+          other_parts ||= []
+        end
+
+        parse_direction a, street_parts unless street_parts.one?
+        
+        a.street = street_parts.join(" ")
+
+        parse_zip   a, other_parts if other_parts.any?
+        parse_unit  a, other_parts if other_parts.any?
+        parse_state a, other_parts if other_parts.any?
+        
+        a.city = other_parts.join(" ") if other_parts.any?
+
+        a
+      end
+
+      #alias_method :old_parse, :parse
+      #alias_method :parse, :parse
+
+      def tokenize(str)
+        str.strip.split(/[^[:alnum:]-]+/)
+      end
+
+      def parse_state(address, tokens)
+        state = tokens.last
+        if state?(state)
+          address.state = state
+          tokens.pop
+        end
+      end
+
+      def parse_zip(address, tokens)
+        zip = tokens.last
+        if zip =~ /(\d{5})-?(\d{4})?/
+          address.postal_code     = $1
+          address.postal_code_ext = $2
+          tokens.pop
+        end
+      end
+
+      UNIT_PREFIX_PATTERN = /^(su?i?te|p\W*[om]\W*b(?:ox)?|dept|apt|apartment|ro*m|fl|unit|box|lot)\.?$/i
+      UNIT_PATTERN = /^([a-z]\d*|\d+[a-z]?)/i
+      def parse_unit(address, tokens)
+        prefix = tokens.first
+        if prefix =~ UNIT_PREFIX_PATTERN
+          address.unit_prefix = prefix
+          tokens.shift
+        end
+
+        tokens.shift if tokens.first == "#"
+
+        unit = tokens.first
+        if unit =~ UNIT_PATTERN
+          address.unit = unit
+          tokens.shift
+        end
+      end
+
+      def parse_direction(address, tokens)
+        if direction?(tokens.first)
+          address.prefix = tokens.shift
+        end
+
+        if direction?(tokens.last)
+          address.suffix = tokens.pop
+        end
+      end
+
+      def state?(val)
+        states.key?(val.downcase) or states.value?(val.upcase)
+      end
+
+      def direction?(val)
+        directions.key?(val.downcase) or directions.value?(val)
+      end
+
+      def states
+        self::STATE_CODES
+      end
+
+      def street_types
+        self::STREET_TYPES_LIST
+      end
+
+      def directions
+        self::DIRECTIONS
       end
 =begin rdoc
     

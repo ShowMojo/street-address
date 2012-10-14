@@ -82,5 +82,23 @@ class StreetAddress::US::Address
       end
     end
     return s
-  end  
+  end
+
+  def as_json
+    {}.tap do |ret|
+      [
+        :number, 
+        :street, 
+        :street_type, 
+        :unit, 
+        :unit_prefix, 
+        :suffix, 
+        :prefix, 
+        :city, 
+        :state, 
+        :postal_code, 
+        :postal_code_ext
+      ].each{|a| ret[a] = send(a) }
+    end
+  end
 end

@@ -75,7 +75,7 @@ class StreetAddressUsTest < Test::Unit::TestCase
 
   def test_parse_on_good_addresses
     @good_addresses.each do |a|
-      assert_not_nil StreetAddress::US.parse(a)
+      assert_not_nil StreetAddress::US.parse(a), a
     end
   end
 
