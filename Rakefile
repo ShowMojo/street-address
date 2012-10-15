@@ -18,7 +18,7 @@ task :filter_file do
   unless ARGV.length == 4
     puts "Expected format: `rake filter_file addresses_in.txt good_addresses_out.txt bad_addresses_out.txt`"
   else
-    parser = StreetAddress::US.new
+    parser = StreetAddress::US.new(:street_only => true)
     input = File.read(ARGV[1]).split("\n")
     good_out, bad_out = ARGV[2..3].map{|p| File.open p, "w" }
     count, good, bad, start = 0, 0, 0, Time.now

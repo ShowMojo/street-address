@@ -9,6 +9,8 @@ class StreetAddressUsTest < Test::Unit::TestCase
     @good_addresses     = @address_fixtures["good_addresses"]
     @bad_addresses      = @address_fixtures["bad_addresses"]
     @complete_addresses = @address_fixtures["complete_addresses"]
+    @good_streets       = @address_fixtures["good_street_only"]
+    @bad_streets        = @address_fixtures["bad_street_only"]
 
     @good_intersections = @address_fixtures["good_intersections"]
 
@@ -54,6 +56,18 @@ class StreetAddressUsTest < Test::Unit::TestCase
     assert_equal "S", a.prefix
     assert_equal "Veitch", a.street
     assert_equal "St", a.street_type
+  end
+
+  def test_street_only_on_good_addresses
+    @good_streets.each do |a|
+      assert_not_nil StreetAddress::US.parse(a, :street_only => true)
+    end
+  end
+
+  def test_street_only_on_bad_addresses
+    @bad_streets.each do |a|
+      assert_nil StreetAddress::US.parse(a, :street_only => true)
+    end
   end
 
   def test_parse_on_complete_addresses

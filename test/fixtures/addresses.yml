@@ -28,6 +28,17 @@ good_intersections:
 - Mission Street at Valencia Street, San Francisco, CA, 90028
 bad_addresses:
 - PO BOX 450, Chicago IL 60657
+good_street_only:
+- 200 London Ave, Apt B6
+- 1225 Jackson St, 3
+- 44 Broadway
+- 277 E 66TH ST
+bad_street_only:
+- 2730 S Veitch St Apt 207, Arlington, VA 22206
+- 77-665
+- 1600 Pennsylvania Ave Washington DC
+- 1600 Pennsylvania Ave Washington DC 20006
+- ! '1600 Pennsylvania Ave #400, Washington, DC, 20006'
 complete_addresses:
 - full: 200 London Ave, B6
   number: '200'

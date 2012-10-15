@@ -11,9 +11,10 @@ module StreetAddress
     include StreetTypes
 
     UNIT_PREFIX_PATTERN = /^(su?i?te|p\W*[om]\W*b(?:ox)?|dept|apt|apartment|ro*m|fl|unit|box|lot)\.?$/i
-    UNIT_PATTERN        = /^([a-z]([-\/]?\d+)|\d+[-\/]?(\d+|[a-z])?)$/i
+    UNIT_PATTERN        = /^([a-z][-\/]?\d*|\d+[-\/]?(\d+|[a-z])?)$/i
     CORNER_PATTERN      = /^(&|and|at)$/i
     LINE_PATTERN        = /,|[\r\n]{1-2}/
+    TOKEN_PATTERN       = /^[A-Za-z0-9'\-&#\.\/]+$/
 
     def self.parse(location, options = {})
       parser = self.new(options)
@@ -24,15 +25,17 @@ module StreetAddress
       @options = options
     end
 
-    def parse(location)
+    def parse(location, options = nil)
       reset location
+      return nil unless @tokens.all?{|t| t =~ TOKEN_PATTERN }
+      options = options ? @options.merge(options) : @options
       parse_number
       if @address.number.nil? and intersection?
         parse_intersection
-      else
+      elsif @tokens.any?
         parse_address
       end
-      if @address.valid?(@options)
+      if @address.valid?(options)
         @options[:normalize] == false ? @address : normalize_address(@address)
       end
     end
@@ -52,7 +55,7 @@ module StreetAddress
       parse_zip               other if other.any?
       parse_leading_unit      other if other.any?
       parse_state             other if other.any?
-      parse_trailing_unit     street unless @address.unit
+      parse_trailing_unit     street unless @address.unit or street.one?
       parse_street            street
       parse_city              other
     end
@@ -123,7 +126,10 @@ module StreetAddress
 
     def split_parts
       street, other = split_parts_by_street_type
-      street, other = @location.split(LINE_PATTERN, 2).map{|l| tokenize l } if street.nil?
+      if street.nil?
+        street, other = @location.split(LINE_PATTERN, 2).map{|l| tokenize l }
+        street.shift # number already parsed
+      end
       other ||= []
       [street, other]
     end
@@ -142,6 +148,7 @@ module StreetAddress
         street = @tokens[0..(street_type_index - 1)]
         other  = @tokens[(street_type_index + 1)..-1]
         @address.suffix = other.shift if other.any? and direction?(other.first)
+        @address.suffix += " #{other.shift}" if other.one? and direction?(other.first)
         [street, other]
       else
         nil
@@ -157,7 +164,8 @@ module StreetAddress
     end
 
     def direction?(val)
-      directions.key?(val.downcase) or directions.value?(val)
+      val = val.gsub(".","")
+      directions.key?(val.downcase) or directions.value?(val.upcase)
     end
 
     def unit?(val)

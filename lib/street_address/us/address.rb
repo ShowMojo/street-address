@@ -43,7 +43,7 @@ class StreetAddress::US::Address
     if options[:informal]
       (number and street) or (options[:intersections] and street and street2)
     elsif options[:street_only]
-      number and street and !(zip city state)
+      number and street and !(city or state or postal_code)
     else
       (
         (number and street) or (options[:intersections] and street and street2)
