@@ -29,6 +29,8 @@ module StreetAddress
     StreetAddress::US.parse('Hollywood & Vine, Los Angeles, CA')
     or
     StreetAddress::US.parse("1600 Pennsylvania Ave", :informal => true)
+    or
+    StreetAddress::US.parse("1600 Pennsylvania Ave", :street_only => true)
     
 =end
     def self.parse(location, options = {})
