@@ -18,6 +18,7 @@ task :filter_file do
   unless ARGV.length == 4
     puts "Expected format: `rake filter_file addresses_in.txt good_addresses_out.txt bad_addresses_out.txt`"
   else
+    parser = StreetAddress::US.new
     input = File.read(ARGV[1]).split("\n")
     good_out, bad_out = ARGV[2..3].map{|p| File.open p, "w" }
     count, good, bad, start = 0, 0, 0, Time.now
@@ -28,7 +29,7 @@ task :filter_file do
     bm = Benchmark.measure do
       input.each do |address_input|
         address_input = $1 if address_input =~ /^"(.*)"$/
-        address_obj = StreetAddress::US.parse_better(address_input)
+        address_obj = parser.parse(address_input)
         if address_obj
           good_out.write "#{address_input}\n"
           good += 1

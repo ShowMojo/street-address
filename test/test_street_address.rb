@@ -58,7 +58,7 @@ class StreetAddressUsTest < Test::Unit::TestCase
 
   def test_parse_on_complete_addresses
     @complete_addresses.each do |a|
-      addr = StreetAddress::US.parse(a["full"])
+      addr = StreetAddress::US.parse(a["full"], :informal => true)
 
       assert_equal addr.number,           a["number"]
       assert_equal addr.street,           a["street"]
@@ -76,13 +76,13 @@ class StreetAddressUsTest < Test::Unit::TestCase
 
   def test_parse_on_good_addresses
     @good_addresses.each do |a|
-      assert_not_nil StreetAddress::US.parse(a), a
+      assert_not_nil StreetAddress::US.parse(a, :informal => true), a
     end
   end
 
   def test_parse_on_good_intersections
     @good_intersections.each do |intersection|
-      assert_not_nil StreetAddress::US.parse(intersection)
+      assert_not_nil StreetAddress::US.parse(intersection, :intersections => true), intersection
     end
   end
 
@@ -96,7 +96,7 @@ class StreetAddressUsTest < Test::Unit::TestCase
     assert_equal StreetAddress::US.parse("&"), nil
     assert_equal StreetAddress::US.parse(" and "), nil
 
-    addr = StreetAddress::US.parse(@int1)
+    addr = StreetAddress::US.parse(@int1, :intersections => true)
     assert_equal addr.city, "Los Angeles"
     assert_equal addr.state, "CA"
     assert_equal addr.street, "Hollywood"
@@ -105,7 +105,7 @@ class StreetAddressUsTest < Test::Unit::TestCase
     assert_equal addr.postal_code, nil
     assert_equal addr.intersection?, true
 
-    addr = StreetAddress::US.parse(@int2)
+    addr = StreetAddress::US.parse(@int2, :intersections => true)
     assert_equal addr.city, "Los Angeles"
     assert_equal addr.state, "CA"
     assert_equal addr.street, "Hollywood"
@@ -116,7 +116,7 @@ class StreetAddressUsTest < Test::Unit::TestCase
     assert_equal addr.street_type, "Blvd"
     assert_equal addr.street_type2, "St"
 
-    addr = StreetAddress::US.parse(@int3)
+    addr = StreetAddress::US.parse(@int3, :intersections => true)
     assert_equal addr.city, "San Francisco"
     assert_equal addr.state, "CA"
     assert_equal addr.street, "Mission"

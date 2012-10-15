@@ -40,10 +40,16 @@ class StreetAddress::US::Address
   end
 
   def valid?(options = {})
-    if intersection?
-      street and street2
+    if options[:informal]
+      (number and street) or (options[:intersections] and street and street2)
+    elsif options[:street_only]
+      number and street and !(zip city state)
     else
-      number and street
+      (
+        (number and street) or (options[:intersections] and street and street2)
+      ) and (
+        postal_code or (city and state)
+      )
     end
   end
 

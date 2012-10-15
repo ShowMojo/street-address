@@ -204,15 +204,12 @@ module StreetAddress
           streets = other
         end
       end
-      [@location, @address.as_json, @tokens, streets].each{|v| puts v.inspect}
       if streets
         intersection_index = streets[1..-2].index do |t|
           t =~ CORNER_PATTERN
         end
-        puts intersection_index
         if intersection_index
           street1 = streets[0..intersection_index]
-          puts street1.inspect
           parse_direction_prefix street1
           parse_direction_suffix street1
           @address.street_type = street1.pop if street1.count > 1 and street_types.key?(street1.last.downcase)
