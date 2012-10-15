@@ -16,6 +16,21 @@ module StreetAddress
     LINE_PATTERN        = /,|[\r\n]{1-2}/
     TOKEN_PATTERN       = /^[A-Za-z0-9'\-&#\.\/]+$/
 
+=begin rdoc
+
+    parses either an address or intersection and returns an instance of
+    StreetAddress::US::Address or nil if the location cannot be parsed
+
+    pass the arguement, :informal => true, to make parsing more lenient
+    
+====example
+    StreetAddress::US.parse('1600 Pennsylvania Ave Washington, DC 20006')
+    or:
+    StreetAddress::US.parse('Hollywood & Vine, Los Angeles, CA')
+    or
+    StreetAddress::US.parse("1600 Pennsylvania Ave", :informal => true)
+    
+=end
     def self.parse(location, options = {})
       parser = self.new(options)
       parser.parse(location)
