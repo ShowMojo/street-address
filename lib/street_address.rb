@@ -13,6 +13,9 @@
     1600 Pennsylvania Ave #400, 20006
     1600 Pennsylvania Ave 20006
     1600 Pennsylvania Ave #400 20006
+    1600 Pennsylvania Ave #400
+    1600 Pennsylvania Ave Apt 400
+    1600 Pennsylvania Ave 400-A
 
 === Valid Intersection Formats
 

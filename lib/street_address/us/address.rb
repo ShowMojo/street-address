@@ -40,6 +40,7 @@ class StreetAddress::US::Address
   end
 
   def valid?(options = {})
+    return false if unit_prefix and unit.nil?
     if options[:informal]
       (number and street) or (options[:intersections] and street and street2)
     elsif options[:street_only]

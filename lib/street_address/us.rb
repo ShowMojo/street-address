@@ -13,7 +13,7 @@ module StreetAddress
     UNIT_PREFIX_PATTERN = /^(su?i?te|p\W*[om]\W*b(?:ox)?|dept|apt|apartment|ro*m|fl|unit|box|lot)\.?$/i
     UNIT_PATTERN        = /^([a-z][-\/]?\d*|\d+[-\/]?(\d+|[a-z])?)$/i
     CORNER_PATTERN      = /^(&|and|at)$/i
-    LINE_PATTERN        = /,|[\r\n]{1-2}/
+    LINE_PATTERN        = /,|[\r\n]{1,2}/
     TOKEN_PATTERN       = /^[A-Za-z0-9'\-&#\.\/]+$/
 
 =begin rdoc
@@ -154,11 +154,11 @@ module StreetAddress
     def split_parts_by_street_type
       street_type_index = nil
       @tokens.each_with_index do |t, i|
-        if i > 0 and street_types[t.downcase]
+        if i > 0 and street_types[t.downcase.gsub(".","")]
           street_type_index = i
           @address.street_type = t
           next_token = @tokens[i+1]
-          break unless next_token and street_types[next_token.downcase]
+          break unless next_token and street_types[next_token.downcase.gsub(".","")]
         end
       end
       if street_type_index

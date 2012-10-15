@@ -12,7 +12,6 @@ task :filter_file do
   $:.unshift File.join(File.dirname(__FILE__), "lib")
   require 'benchmark'
   require 'street_address'
-  require 'json'
   
   unless ARGV.length == 4
     puts "Expected format: `rake filter_file addresses_in.txt good_addresses_out.txt bad_addresses_out.txt`"
@@ -49,7 +48,7 @@ task :filter_file do
     bad_out.close
 
     elapsed = Time.now - start
-    puts "Processed #{count} addresses in #{elapsed.round(2)}s (#{(count/elapsed).round(2)} addresses/second)"
+    puts "Processed #{count} addresses in #{elapsed.round}s (#{(count/elapsed).round} addresses/second)"
     puts "  Good Addresses: " + sprintf("%#{lines.to_s.length}d", good)
     puts "  Bad  Addresses: " + sprintf("%#{lines.to_s.length}d", bad)
     puts
