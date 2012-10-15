@@ -10,6 +10,7 @@ module StreetAddress
     include States
     include StreetTypes
 
+    VERSION             = '1.1.0'
     UNIT_PREFIX_PATTERN = /^(su?i?te|p\W*[om]\W*b(?:ox)?|dept|apt|apartment|ro*m|fl|unit|box|lot)\.?$/i
     UNIT_PATTERN        = /^([a-z][-\/]?\d*|\d+[-\/]?(\d+|[a-z])?)$/i
     CORNER_PATTERN      = /^(&|and|at)$/i

@@ -11,17 +11,11 @@ Gem::Specification.new do |s|
     "Nicholas Schleuter"
   ]
   s.require_paths = ["lib"]
-  s.email = "derreklong@gmail.com"
-  s.files = [
-    "README.rdoc",
-    "Rakefile",
-    "LICENSE",
-    "lib/street_address.rb"
-  ]
-  s.test_files = [
-    "test/test_street_address.rb"
-  ]
-  s.homepage = "https://github.com/derrek/street-address"
+  s.email         = "derreklong@gmail.com"
+  s.files         = %w( README.rdoc Rakefile LICENSE )
+  s.files        += Dir.glob("lib/**/*")
+  s.test_files    = Dir.glob("test/**/*")
+  s.homepage      = "https://github.com/derrek/street-address"
   s.description = <<desc
 StreetAddress::US allows you to send any string to parse and if the string is a US address returns an object of the address broken into it's substituent parts.
 
