@@ -9,344 +9,257 @@ module StreetAddress
     include Directions
     include States
     include StreetTypes
-    
-    class << self
-      attr_accessor(
-        :street_type_regexp,
-        :number_regexp,
-        :fraction_regexp,
-        :state_regexp,
-        :city_and_state_regexp,
-        :direct_regexp, 
-        :zip_regexp,
-        :corner_regexp,
-        :unit_regexp,
-        :street_regexp,
-        :place_regexp,
-        :address_regexp,
-        :informal_address_regexp
-      )
+
+    UNIT_PREFIX_PATTERN = /^(su?i?te|p\W*[om]\W*b(?:ox)?|dept|apt|apartment|ro*m|fl|unit|box|lot)\.?$/i
+    UNIT_PATTERN        = /^([a-z]([-\/]?\d+)|\d+[-\/]?(\d+|[a-z])?)$/i
+    CORNER_PATTERN      = /^(&|and|at)$/i
+    LINE_PATTERN        = /,|[\r\n]{1-2}/
+
+    def self.parse(location, options = {})
+      parser = self.new(options)
+      parser.parse(location)
+    end
+
+    def initialize(options = {})
+      @options = options
+    end
+
+    def parse(location)
+      reset location
+      parse_number
+      if @address.number.nil? and intersection?
+        parse_intersection
+      else
+        parse_address
+      end
+      if @address.valid?(@options)
+        @options[:normalize] == false ? @address : normalize_address(@address)
+      end
+    end
+
+  private
+
+    def reset(location)
+      @location = location
+      @address  = Address.new({})
+      @tokens   = tokenize location
+    end
+
+    def parse_address
+      street, other = split_parts
+      parse_direction_prefix  street
+      parse_direction_suffix  street
+      parse_zip               other if other.any?
+      parse_leading_unit      other if other.any?
+      parse_state             other if other.any?
+      parse_trailing_unit     street unless @address.unit
+      parse_street            street
+      parse_city              other
+    end
+
+    def parse_city(tokens)
+      @address.city = tokens.join(" ") if tokens.any?
+    end
+
+    def parse_state(tokens)
+      @address.state = tokens.pop if state?(tokens.last)
+    end
+
+    def parse_zip(tokens)
+      if tokens.last =~ /(\d{5})-?(\d{4})?/
+        @address.postal_code     = $1
+        @address.postal_code_ext = $2
+        tokens.pop
+      end
+    end
+
+    def parse_leading_unit(tokens)
+      @address.unit_prefix  = tokens.shift if unit_prefix?(tokens.first)
+      @address.unit         = tokens.shift if unit?(tokens.first)
+    end
+
+    def parse_trailing_unit(tokens)
+      @address.unit = tokens.pop if unit?(tokens.last)
+      if @address.unit and unit_prefix?(tokens.last)
+        @address.unit_prefix = tokens.pop
+      end
+    end
+
+    def parse_street(tokens)
+      @address.street = tokens.join(" ") unless tokens.empty?
+    end
+
+    def parse_number
+      @address.number = @tokens.shift if @tokens.first =~ /\d+-?\d*[a-z]?/i
+    end
+
+    def parse_direction_prefix(tokens)
+      if tokens.count > 1 and direction?(tokens.first)
+        @address.prefix = tokens.shift
+      end
+    end
+
+    def parse_direction_suffix(tokens)
+      if tokens.count > 1 and direction?(tokens.last)
+        @address.suffix = tokens.pop
+      end
+    end
+
+    def parse_direction_prefix2(tokens)
+      if tokens.count > 1 and direction?(tokens.first)
+        @address.prefix2 = tokens.shift
+      end
+    end
+
+    def parse_direction_suffix2(tokens)
+      if tokens.count > 1 and direction?(tokens.last)
+        @address.suffix2 = tokens.pop
+      end
+    end
+
+    def tokenize(str)
+      str.strip.split(/[ ,#\n\r\t]+/)
+    end
+
+    def split_parts
+      street, other = split_parts_by_street_type
+      street, other = @location.split(LINE_PATTERN, 2).map{|l| tokenize l } if street.nil?
+      other ||= []
+      [street, other]
+    end
+
+    def split_parts_by_street_type
+      street_type_index = nil
+      @tokens.each_with_index do |t, i|
+        if i > 0 and street_types[t.downcase]
+          street_type_index = i
+          @address.street_type = t
+          next_token = @tokens[i+1]
+          break unless next_token and street_types[next_token.downcase]
+        end
+      end
+      if street_type_index
+        street = @tokens[0..(street_type_index - 1)]
+        other  = @tokens[(street_type_index + 1)..-1]
+        @address.suffix = other.shift if other.any? and direction?(other.first)
+        [street, other]
+      else
+        nil
+      end
+    end
+
+    def intersection?
+      @tokens[1..-2].grep(CORNER_PATTERN).any?
+    end
+
+    def state?(val)
+      states.key?(val.downcase) or states.value?(val.upcase)
+    end
+
+    def direction?(val)
+      directions.key?(val.downcase) or directions.value?(val)
+    end
+
+    def unit?(val)
+      !!(val =~ UNIT_PATTERN)
+    end
+
+    def unit_prefix?(val)
+      !!(val =~ UNIT_PREFIX_PATTERN)
+    end
+
+    def states
+      STATE_CODES
+    end
+
+    def street_types
+      STREET_TYPES_LIST
+    end
+
+    def directions
+      DIRECTIONS
+    end
+
+    # TODO: ugly method. refector.
+    def parse_intersection
+      lines = @location.split(LINE_PATTERN, 2)
+      if lines.length == 2
+        other = tokenize lines.last
+        streets = tokenize lines.first
+      else
+        other = @tokens
+        streets = nil
+      end
+      parse_zip   other
+      parse_state other
+      if streets
+        @address.city = other.join(" ")
+      else
+        city = []
+        until other.empty? or street_types.key?(other.last.downcase)
+          city << other.pop
+        end
+        if other.count > 2
+          @address.city = city.join(" ")
+          streets = other
+        end
+      end
+      [@location, @address.as_json, @tokens, streets].each{|v| puts v.inspect}
+      if streets
+        intersection_index = streets[1..-2].index do |t|
+          t =~ CORNER_PATTERN
+        end
+        puts intersection_index
+        if intersection_index
+          street1 = streets[0..intersection_index]
+          puts street1.inspect
+          parse_direction_prefix street1
+          parse_direction_suffix street1
+          @address.street_type = street1.pop if street1.count > 1 and street_types.key?(street1.last.downcase)
+          @address.street = street1.join(" ")
+          street2 = streets[(intersection_index + 2)..-1]
+          parse_direction_prefix2 street2
+          parse_direction_suffix2 street2
+          @address.street_type2 = street2.pop if street2.count > 1 and street_types.key?(street2.last.downcase)
+          @address.street2 = street2.join(" ")
+        end
+      end
     end
       
-    self.street_type_regexp = STREET_TYPES_LIST.keys.join("|")
-    self.number_regexp = '\d+-?\d*'
-    self.fraction_regexp = '\d+\/\d+'
-    self.state_regexp = STATE_CODES.to_a.join("|").gsub(/ /, "\\s")
-    self.city_and_state_regexp = '
-      (?:
-        ([^\d,]+?)\W+
-        (' + state_regexp + ')
-      )'
-      
-    self.direct_regexp = DIRECTIONS.keys.join("|") + 
-      "|" + 
-      DIRECTIONS.values.sort{ |a,b| 
-        b.length <=> a.length 
-      }.map{ |x| 
-        f = x.gsub(/(\w)/, '\1.')
-        [Regexp::quote(f), Regexp::quote(x)] 
-      }.join("|")
-    self.zip_regexp = '(\d{5})(?:-?(\d{4})?)'
-    self.corner_regexp = '(?:\band\b|\bat\b|&|\@)'
-    self.unit_regexp = '(?:(su?i?te|p\W*[om]\W*b(?:ox)?|dept|apt|apartment|ro*m|fl|unit|box)\W+|\#\W*)([\w-]+)'
-    self.street_regexp = 
-      '(?:
-          (?:(' + direct_regexp + ')\W+
-          (' + street_type_regexp + ')\b)
-          |
-          (?:(' + direct_regexp + ')\W+)?
-          (?:
-            ([^,]+)
-            (?:[^\w,]+(' + street_type_regexp + ')\b)
-            (?:[^\w,]+(' + direct_regexp + ')\b)?
-           |
-            ([^,]*\d)
-            (' + direct_regexp + ')\b
-           |
-            ([^,]+?)
-            (?:[^\w,]+(' + street_type_regexp + ')\b)?
-            (?:[^\w,]+(' + direct_regexp + ')\b)?
-          )
-        )'
-    self.place_regexp = 
-      '(?:' + city_and_state_regexp + '\W*)?
-       (?:' + zip_regexp + ')?'
+    def normalize_address(addr)
+      addr.state = normalize_state(addr.state) unless addr.state.nil?
+      addr.street_type = normalize_street_type(addr.street_type) unless addr.street_type.nil?
+      addr.prefix = normalize_directional(addr.prefix) unless addr.prefix.nil?
+      addr.suffix = normalize_directional(addr.suffix) unless addr.suffix.nil?
+      addr.street.gsub!(/\b([a-z])/) {|wd| wd.capitalize} unless addr.street.nil?
+      addr.street_type2 = normalize_street_type(addr.street_type2) unless addr.street_type2.nil?
+      addr.prefix2 = normalize_directional(addr.prefix2) unless addr.prefix2.nil?
+      addr.suffix2 = normalize_directional(addr.suffix2) unless addr.suffix2.nil?
+      addr.street2.gsub!(/\b([a-z])/) {|wd| wd.capitalize} unless addr.street2.nil?
+      addr.city.gsub!(/\b([a-z])/) {|wd| wd.capitalize} unless addr.city.nil?
+      addr.unit_prefix.capitalize! unless addr.unit_prefix.nil?
+      return addr
+    end
     
-    self.address_regexp =
-      '\A\W*
-        (' + number_regexp + ')\W*
-        (?:' + fraction_regexp + '\W*)?' +
-        street_regexp + '\W+
-        (?:' + unit_regexp + '\W+)?' +
-        place_regexp +
-      '\W*\Z'
-      
-    self.informal_address_regexp =
-      '\A\s*
-        (' + number_regexp + ')\W*
-        (?:' + fraction_regexp + '\W*)?' +
-        street_regexp + '(?:\W+|\Z)
-        (?:' + unit_regexp + '(?:\W+|\Z))?' +
-        '(?:' + place_regexp + ')?'
-
-=begin rdoc
-
-    parses either an address or intersection and returns an instance of
-    StreetAddress::US::Address or nil if the location cannot be parsed
-
-    pass the arguement, :informal => true, to make parsing more lenient
+    def normalize_state(state)
+      if state.length < 3
+        state.upcase
+      else
+        STATE_CODES[state.downcase]
+      end
+    end
     
-====example
-    StreetAddress::US.parse('1600 Pennsylvania Ave Washington, DC 20006')
-    or:
-    StreetAddress::US.parse('Hollywood & Vine, Los Angeles, CA')
-    or
-    StreetAddress::US.parse("1600 Pennsylvania Ave", :informal => true)
+    def normalize_street_type(s_type)
+      s_type.downcase!
+      s_type = STREET_TYPES[s_type] || s_type if STREET_TYPES_LIST[s_type]
+      s_type.capitalize
+    end
     
-=end
-    class << self
-      #def parse(location, args = {})
-      #  if Regexp.new(corner_regexp, Regexp::IGNORECASE).match(location)
-      #    parse_intersection(location)
-      #  elsif args[:informal]
-      #    parse_address(location) || parse_informal_address(location)
-      #  else 
-      #    parse_address(location);
-      #  end
-      #end
-
-      def parse(location, options = {})
-        tokens = tokenize location
-        return if tokens.empty?
-        a = Address.new({})
-
-        return parse_intersection(location) if tokens.grep(/^(&|and|at)$/i).any?
-
-        a.number = tokens.shift
-        return unless a.number =~ /\d+-?\d*[a-z]?/i and tokens.any?
-
-        street_type_index = nil
-        tokens.each_with_index do |t, i|
-          if i > 0 and street_types[t.downcase]
-            street_type_index = i
-            a.street_type = t
-            next_token = tokens[i+1]
-            break unless next_token and street_types[next_token.downcase]
-          end
-        end
-
-        if street_type_index
-          street_parts = tokens[0..(street_type_index - 1)]
-          other_parts  = tokens[(street_type_index + 1)..-1]
-          a.suffix = other_parts.shift if other_parts.any? and direction?(other_parts.first)
-        else
-          street_parts, other_parts = location.split(",", 2).map{|l| tokenize l }
-          other_parts ||= []
-        end
-
-        if street_parts.count > 1 and direction?(street_parts.first)
-          a.prefix = street_parts.shift
-        end
-
-        if street_parts.count > 1 and direction?(street_parts.last)
-          a.prefix = street_parts.pop
-        end
-
-        a.street = street_parts.join(" ")
-
-        parse_zip   a, other_parts if other_parts.any?
-        parse_unit  a, other_parts if other_parts.any?
-        parse_state a, other_parts if other_parts.any?
-        a.city = other_parts.join(" ") if other_parts.any?
-
-        normalize_address a
-      end
-
-      def tokenize(str)
-        str.strip.split(/[ ,#\n\r\t]+/)
-      end
-
-      def parse_state(address, tokens)
-        state = tokens.last
-        if state?(state)
-          address.state = state
-          tokens.pop
-        end
-      end
-
-      def parse_zip(address, tokens)
-        zip = tokens.last
-        if zip =~ /(\d{5})-?(\d{4})?/
-          address.postal_code     = $1
-          address.postal_code_ext = $2
-          tokens.pop
-        end
-      end
-
-      UNIT_PREFIX_PATTERN = /^(su?i?te|p\W*[om]\W*b(?:ox)?|dept|apt|apartment|ro*m|fl|unit|box|lot)\.?$/i
-      UNIT_PATTERN = /^([a-z]([-\/]?\d+)|\d+[-\/]?(\d+|[a-z])?)$/i
-      def parse_unit(address, tokens)
-        prefix = tokens.first
-        if prefix =~ UNIT_PREFIX_PATTERN
-          address.unit_prefix = prefix
-          tokens.shift
-        end
-
-        tokens.shift if tokens.first == "#"
-
-        unit = tokens.first
-        if unit =~ UNIT_PATTERN
-          address.unit = unit
-          tokens.shift
-        end
-      end
-
-      def state?(val)
-        states.key?(val.downcase) or states.value?(val.upcase)
-      end
-
-      def direction?(val)
-        directions.key?(val.downcase) or directions.value?(val)
-      end
-
-      def states
-        self::STATE_CODES
-      end
-
-      def street_types
-        self::STREET_TYPES_LIST
-      end
-
-      def directions
-        self::DIRECTIONS
-      end
-=begin rdoc
-    
-    parses only an intersection and returnsan instance of
-    StreetAddress::US::Address or nil if the intersection cannot be parsed
-    
-====example
-    address = StreetAddress::US.parse('Hollywood & Vine, Los Angeles, CA')
-    assert address.intersection?
-    
-=end
-      def parse_intersection(inter)
-        regex = Regexp.new(
-          '\A\W*' + street_regexp + '\W*?
-          \s+' + corner_regexp + '\s+' +
-          street_regexp + '\W+' +
-          place_regexp + '\W*\Z', Regexp::IGNORECASE + Regexp::EXTENDED
-        )
-        
-        return unless match = regex.match(inter)
-        
-        normalize_address(
-          StreetAddress::US::Address.new(
-            :street => match[4] || match[9],
-            :street_type => match[5],
-            :suffix => match[6],
-            :prefix => match[3],
-            :street2 => match[15] || match[20],
-            :street_type2 => match[16],
-            :suffix2 => match[17],
-            :prefix2 => match[14],
-            :city => match[23],
-            :state => match[24],
-            :postal_code => match[25]
-          )
-        )
-      end
-      
-=begin rdoc
-
-    parses only an address and returnsan instance of
-    StreetAddress::US::Address or nil if the address cannot be parsed
-
-====example
-    address = StreetAddress::US.parse('1600 Pennsylvania Ave Washington, DC 20006')
-    assert !address.intersection?
-
-=end
-      def parse_address(addr)
-         regex = Regexp.new(address_regexp, Regexp::IGNORECASE + Regexp::EXTENDED)
-
-         return unless match = regex.match(addr)
-
-         normalize_address(
-           StreetAddress::US::Address.new(
-           :number => match[1],
-           :street => match[5] || match[10] || match[2],
-           :street_type => match[6] || match[3],
-           :unit => match[14],
-           :unit_prefix => match[13],
-           :suffix => match[7] || match[12],
-           :prefix => match[4],
-           :city => match[15],
-           :state => match[16],
-           :postal_code => match[17],
-           :postal_code_ext => match[18]
-           )
-        )
-      end
-
-      def parse_informal_address(addr)
-         regex = Regexp.new(informal_address_regexp, Regexp::IGNORECASE + Regexp::EXTENDED)
-
-         return unless match = regex.match(addr)
-
-         normalize_address(
-           StreetAddress::US::Address.new(
-           :number => match[1],
-           :street => match[5] || match[10] || match[2],
-           :street_type => match[6] || match[3],
-           :unit => match[14],
-           :unit_prefix => match[13],
-           :suffix => match[7] || match[12],
-           :prefix => match[4],
-           :city => match[15],
-           :state => match[16],
-           :postal_code => match[17],
-           :postal_code_ext => match[18]
-           )
-        )
-      end
-      
-      private
-      def normalize_address(addr)
-        addr.state = normalize_state(addr.state) unless addr.state.nil?
-        addr.street_type = normalize_street_type(addr.street_type) unless addr.street_type.nil?
-        addr.prefix = normalize_directional(addr.prefix) unless addr.prefix.nil?
-        addr.suffix = normalize_directional(addr.suffix) unless addr.suffix.nil?
-        addr.street.gsub!(/\b([a-z])/) {|wd| wd.capitalize} unless addr.street.nil?
-        addr.street_type2 = normalize_street_type(addr.street_type2) unless addr.street_type2.nil?
-        addr.prefix2 = normalize_directional(addr.prefix2) unless addr.prefix2.nil?
-        addr.suffix2 = normalize_directional(addr.suffix2) unless addr.suffix2.nil?
-        addr.street2.gsub!(/\b([a-z])/) {|wd| wd.capitalize} unless addr.street2.nil?
-        addr.city.gsub!(/\b([a-z])/) {|wd| wd.capitalize} unless addr.city.nil?
-        addr.unit_prefix.capitalize! unless addr.unit_prefix.nil?
-        return addr
-      end
-      
-      def normalize_state(state)
-        if state.length < 3
-          state.upcase
-        else
-          self::STATE_CODES[state.downcase]
-        end
-      end
-      
-      def normalize_street_type(s_type)
-        s_type.downcase!
-        s_type = self::STREET_TYPES[s_type] || s_type if self::STREET_TYPES_LIST[s_type]
-        s_type.capitalize
-      end
-      
-      def normalize_directional(dir)
-        if dir.length < 3
-          dir.upcase
-        else
-          self::DIRECTIONS[dir.downcase]
-        end
+    def normalize_directional(dir)
+      if dir.length < 3
+        dir.upcase
+      else
+        DIRECTIONS[dir.downcase]
       end
     end
 

@@ -39,6 +39,14 @@ class StreetAddress::US::Address
     !street2.nil?
   end
 
+  def valid?(options = {})
+    if intersection?
+      street and street2
+    else
+      number and street
+    end
+  end
+
   def line1(s = "")
     s += number
     s += " " + prefix unless prefix.nil?
@@ -56,6 +64,7 @@ class StreetAddress::US::Address
 
   def to_s(format = :default)
     s = ""
+    return s unless valid?
     case format
     when :line1
       s += line1(s)
