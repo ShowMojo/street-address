@@ -174,7 +174,8 @@ module StreetAddress
     end
 
     def intersection?
-      @tokens[1..-2].grep(CORNER_PATTERN).any?
+      possible_corners = @tokens[1..-2]
+      possible_corners and possible_corners.grep(CORNER_PATTERN).any?
     end
 
     def state?(val)

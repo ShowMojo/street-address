@@ -109,6 +109,7 @@ class StreetAddressUsTest < Test::Unit::TestCase
   def test_parse
     assert_equal StreetAddress::US.parse("&"), nil
     assert_equal StreetAddress::US.parse(" and "), nil
+    assert_equal StreetAddress::US.parse(""), nil
 
     addr = StreetAddress::US.parse(@int1, :intersections => true)
     assert_equal addr.city, "Los Angeles"
