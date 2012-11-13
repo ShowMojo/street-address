@@ -61,8 +61,8 @@ module StreetAddress
       if @address.valid?(options)
         @options[:normalize] == false ? @address : normalize_address(@address)
       end
-    #rescue
-    #  nil
+    rescue
+      nil
     end
 
   private
@@ -190,10 +190,6 @@ module StreetAddress
           end
         end
       end
-    end
-
-    def clean_token(token)
-      token.gsub(".", "")
     end
 
     def split_parts
