@@ -40,6 +40,18 @@ bad_street_only:
 - 1600 Pennsylvania Ave Washington DC 20006
 - ! '1600 Pennsylvania Ave #400, Washington, DC, 20006'
 complete_addresses:
+- full: 123 Avenue B
+  number: '123'
+  street: Avenue B
+  street_type:
+  unit:
+  unit_prefix:
+  suffix:
+  prefix:
+  city:
+  state:
+  postal_code:
+  postal_code_ext:
 - full: 200 London Ave, B6
   number: '200'
   street: London
