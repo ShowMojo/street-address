@@ -1,5 +1,3 @@
-require 'pry'
-
 module StreetAddress
   class US
 
