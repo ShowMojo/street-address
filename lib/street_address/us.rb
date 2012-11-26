@@ -122,7 +122,7 @@ module StreetAddress
       street = nil
       if tokens.count > 1
         (1..(tokens.count - 1)).to_a.reverse.each do |i|
-          if street_types[tokens[i].downcase.gsub(".", "")]
+          if street_type?(tokens[i])
             street = tokens.slice!(0, i)
             @address.street_type = tokens.shift
             break
@@ -141,7 +141,10 @@ module StreetAddress
     end
 
     def parse_direction_prefix(tokens)
-      if tokens.count > 1 and direction?(tokens.first)
+      if tokens.count > 1 and direction?(tokens.first) and
+          (
+            tokens.count > 2 or !street_type?(tokens.last)
+          )
         @address.prefix = tokens.shift
       end
     end
@@ -221,6 +224,10 @@ module StreetAddress
 
     def unit_prefix?(val)
       !!(val =~ UNIT_PREFIX_PATTERN)
+    end
+
+    def street_type?(val)
+      !!street_types[val.downcase.gsub(".", "")]
     end
 
     def states
