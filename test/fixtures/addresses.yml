@@ -40,7 +40,7 @@ bad_street_only:
 - 1600 Pennsylvania Ave Washington DC 20006
 - ! '1600 Pennsylvania Ave #400, Washington, DC, 20006'
 complete_addresses:
-- full: 123 North St
+- full: 123 North St.
   number: '123'
   street: North
   street_type: St

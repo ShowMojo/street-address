@@ -124,7 +124,7 @@ module StreetAddress
         (1..(tokens.count - 1)).to_a.reverse.each do |i|
           if street_type?(tokens[i])
             street = tokens.slice!(0, i)
-            @address.street_type = tokens.shift
+            @address.street_type = tokens.shift.gsub(".", "")
             break
           end
         end
