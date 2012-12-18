@@ -137,7 +137,11 @@ module StreetAddress
     end
 
     def parse_number
-      @address.number = @tokens.shift if @tokens.first =~ /\d+-?\d*[a-z]?/i
+      if @tokens.first =~ /\d+-?\d*[a-z]?/i
+        number = @tokens.shift 
+        number << " #{@tokens.shift}" if @tokens.first =~ %r{^1/2$}
+        @address.number = number
+      end
     end
 
     def parse_direction_prefix(tokens)
