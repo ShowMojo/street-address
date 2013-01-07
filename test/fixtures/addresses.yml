@@ -40,6 +40,30 @@ bad_street_only:
 - 1600 Pennsylvania Ave Washington DC 20006
 - ! '1600 Pennsylvania Ave #400, Washington, DC, 20006'
 complete_addresses:
+- full: 2730 N.72nd St, Omaha, NE 68134
+  number: '2730'
+  street: 72nd
+  street_type: St
+  unit:
+  unit_prefix:
+  suffix:
+  prefix: N
+  city: Omaha
+  state: NE
+  postal_code: '68134'
+  postal_code_ext:
+- full: 2730 N. 72nd St, Omaha, NE 68134
+  number: '2730'
+  street: 72nd
+  street_type: St
+  unit:
+  unit_prefix:
+  suffix:
+  prefix: N
+  city: Omaha
+  state: NE
+  postal_code: '68134'
+  postal_code_ext:
 - full: ! '2730 1/2 North 72nd St, Omaha, NE 68134'
   number: '2730 1/2'
   street: 72nd

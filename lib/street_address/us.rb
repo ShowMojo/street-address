@@ -191,7 +191,7 @@ module StreetAddress
         [].tap do |pieces|
           piece.split(/(?:\r?\n)+/).each_with_index do |t, i|
             pieces << SEPARATOR if i > 0
-            pieces << t
+            t.split(".").each{|p| pieces << p }
           end
         end
       end
@@ -218,7 +218,6 @@ module StreetAddress
     end
 
     def direction?(val)
-      val = val.gsub(".","")
       directions.key?(val.downcase) or directions.value?(val.upcase)
     end
 
