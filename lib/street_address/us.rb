@@ -46,7 +46,7 @@ module StreetAddress
 
     def parse(location, options = nil)
       reset location
-      return nil unless @tokens.all?{|t| t =~ TOKEN_PATTERN or t == SEPARATOR }
+      return nil unless @tokens.all?{|t| t == SEPARATOR or t =~ TOKEN_PATTERN }
       options = options ? @options.merge(options) : @options
       parse_number
       if @address.number.nil? and intersection?
